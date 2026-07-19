@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Logo } from "@/components/Logo";
@@ -19,7 +19,7 @@ const MEALS = [
   { value: "other", label: "Diğer", icon: "🍽️" },
 ];
 
-export default function AddFoodPage() {
+function AddFoodContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedDate = searchParams.get("date") || (() => {
@@ -360,5 +360,13 @@ export default function AddFoodPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function AddFoodPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}>
+      <AddFoodContent />
+    </Suspense>
   );
 }
