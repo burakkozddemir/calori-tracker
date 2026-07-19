@@ -48,6 +48,16 @@ def add_food(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    from datetime import datetime as dt
+    food_date = None
+    if food_data.date:
+        try:
+            food_date = dt.strptime(food_data.date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            food_date = date.today()
+    else:
+        food_date = date.today()
+
     daily_food = DailyFood(
         user_id=current_user.id,
         food_id=food_data.food_id,
@@ -58,7 +68,7 @@ def add_food(
         fat=food_data.fat,
         carb=food_data.carb,
         meal_type=food_data.meal_type,
-        date=food_data.date or date.today(),
+        date=food_date,
     )
     db.add(daily_food)
     db.commit()

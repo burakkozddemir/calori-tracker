@@ -12,7 +12,7 @@ class DailyFoodCreate(BaseModel):
     carb: float = 0
     meal_type: str = "other"
     food_id: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[str] = None
 
 
 class DailyFoodResponse(BaseModel):
