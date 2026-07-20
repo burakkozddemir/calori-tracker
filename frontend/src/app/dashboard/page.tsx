@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const [weightHistory, setWeightHistory] = useState<any[]>([]);
   const [projection, setProjection] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [weightDeleteConfirm, setWeightDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     loadDaily();
@@ -98,7 +99,7 @@ export default function DashboardPage() {
     try {
       const [today, history, proj] = await Promise.all([
         api.weight.today(),
-        api.weight.history(14),
+        api.weight.historyAll(),
         api.weight.projection(),
       ]);
       setTodayWeight(today);
@@ -140,6 +141,21 @@ export default function DashboardPage() {
       await api.food.remove(id);
       setDeleteConfirm(null);
       loadDaily();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteWeight = async (id: number) => {
+    if (weightDeleteConfirm !== id) {
+      setWeightDeleteConfirm(id);
+      setTimeout(() => setWeightDeleteConfirm(null), 3000);
+      return;
+    }
+    try {
+      await api.weight.remove(id);
+      setWeightDeleteConfirm(null);
+      loadWeightData();
     } catch (err) {
       console.error(err);
     }
@@ -526,6 +542,65 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-4 space-y-1.5">
+                {weightHistory.map((w: any, i: number) => {
+                  const next = weightHistory[i + 1];
+                  const diff = next ? w.weight - next.weight : 0;
+                  const isDown = diff < 0;
+                  const isUp = diff > 0;
+                  const dt = new Date(w.date);
+                  return (
+                    <div key={w.id} className="flex items-center gap-2 py-2 px-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group">
+                      <div className={`w-1.5 h-8 rounded-full ${w.condition === "full" ? "bg-amber-400" : "bg-blue-400"}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-gray-800 dark:text-gray-100">{w.weight} kg</span>
+                          {diff !== 0 && (
+                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                              isDown
+                                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                                : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                            }`}>
+                              {isDown ? "↓" : "↑"} {Math.abs(diff).toFixed(1)} kg
+                            </span>
+                          )}
+                          {i === weightHistory.length - 1 && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">ilk ölçüm</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {dt.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}{" "}
+                          {dt.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                          <span className={`ml-2 ${
+                            w.condition === "full"
+                              ? "text-amber-500 dark:text-amber-400"
+                              : "text-blue-500 dark:text-blue-400"
+                          }`}>
+                            {w.condition === "full" ? "Tok" : "Aç"}
+                          </span>
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteWeight(w.id)}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition text-sm ${
+                          weightDeleteConfirm === w.id
+                            ? "bg-red-500 text-white animate-pulse"
+                            : "text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        }`}
+                      >
+                        {weightDeleteConfirm === w.id ? (
+                          <span className="text-[10px] font-medium">Sil?</span>
+                        ) : (
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

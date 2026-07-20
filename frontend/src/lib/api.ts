@@ -85,5 +85,9 @@ export const api = {
       request<any[]>(`/weight/history?days=${days}`),
     today: () => request<any | null>("/weight/today"),
     projection: () => request<any>("/weight/projection"),
+    remove: (id: number) =>
+      request<any>(`/weight/${id}`, { method: "DELETE" }),
+    historyAll: () =>
+      request<any[]>("/weight/history?days=365"),
   },
 };

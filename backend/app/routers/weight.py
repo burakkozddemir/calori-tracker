@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 from app.database import get_db
@@ -88,6 +88,22 @@ def get_today_weight(
     if log:
         return {"weight": log.weight, "condition": log.condition, "date": log.date.isoformat()}
     return None
+
+
+@router.delete("/{weight_id}")
+def delete_weight(
+    weight_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    log = db.query(WeightLog).filter(
+        WeightLog.id == weight_id, WeightLog.user_id == current_user.id
+    ).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Ölçüm bulunamadı")
+    db.delete(log)
+    db.commit()
+    return {"detail": "Silindi"}
 
 
 @router.get("/projection")
