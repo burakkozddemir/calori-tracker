@@ -76,7 +76,6 @@ export default function DashboardPage() {
   const [weightHistory, setWeightHistory] = useState<any[]>([]);
   const [projection, setProjection] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-  const [weightDeleteConfirm, setWeightDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     loadDaily();
@@ -147,14 +146,9 @@ export default function DashboardPage() {
   };
 
   const handleDeleteWeight = async (id: number) => {
-    if (weightDeleteConfirm !== id) {
-      setWeightDeleteConfirm(id);
-      setTimeout(() => setWeightDeleteConfirm(null), 3000);
-      return;
-    }
+    if (!window.confirm("Bu tartı ölçümünü silmek istediğine emin misin?")) return;
     try {
       await api.weight.remove(id);
-      setWeightDeleteConfirm(null);
       loadWeightData();
     } catch (err) {
       console.error(err);
@@ -584,19 +578,11 @@ export default function DashboardPage() {
                       </div>
                       <button
                         onClick={() => handleDeleteWeight(w.id)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition text-sm ${
-                          weightDeleteConfirm === w.id
-                            ? "bg-red-500 text-white animate-pulse"
-                            : "text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        }`}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition text-sm text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
-                        {weightDeleteConfirm === w.id ? (
-                          <span className="text-[10px] font-medium">Sil?</span>
-                        ) : (
-                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        )}
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                     </div>
                   );
